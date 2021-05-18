@@ -9,6 +9,7 @@ from werkzeug.exceptions import RequestURITooLarge
 from werkzeug.wrappers import Response
 import youtube_dl
 import os
+import json
 import requests
 from flask_cors import CORS
 
@@ -18,6 +19,10 @@ CORS(app)
 @app.route('/slashing', methods=['GET'])
 def slashing_api():
     url = request.args.get('url')
+    
+    # delete source.mp3 file
+    os.system('del source.mp3')
+    
     mp3_file_name = get_mp3(url)
     
     # extract vocal from source.mp3 file
@@ -25,20 +30,15 @@ def slashing_api():
     os.system('python -m spleeter separate -i source.mp3 -p spleeter:4stems -o output')
     
     # delete source.mp3 file
-    os.system('del source.mp3')
+    # os.system('del source.mp3')
     
     # for debug
     print('spleeter finished')
     
     # send vocals.wav to deepspeech server
-    url = 'http://3.94.121.170/receive.php'
+    url = 'http://54.152.57.69/receive.php'
     files = {'uploadFile': open('./output/source/vocals.wav', 'rb')}
     res = requests.post(url, files = files)
-    
-    # resp = make_response(
-    #     send_file("./output/source/vocals.wav", mimetype="audio/wav", as_attachment=True, attachment_filename="vocals.wav")
-    # )
-    # send vocal.wav (extracted from source.mp3) to check
     
     return str(res.text)
 
@@ -65,6 +65,12 @@ def get_mp3(url):
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0')
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
